@@ -1,12 +1,7 @@
 "use client";
 
-import {
-  QueryClient,
-  QueryClientProvider,
-  useQuery,
-  hydrate,
-} from "@tanstack/react-query";
-import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { fetchNotes, FetchNotesResponse } from "../../lib/api";
 import NoteList from "../../components/NoteList/NoteList";
@@ -16,27 +11,7 @@ import NoteForm from "../../components/NoteForm/NoteForm";
 import SearchBox from "../../components/SearchBox/SearchBox";
 import css from "./Notes.module.css";
 
-interface NotesClientProps {
-  dehydratedState?: unknown;
-}
-
-export default function NotesClient({ dehydratedState }: NotesClientProps) {
-  const [queryClient] = useState(() => new QueryClient());
-
-  useMemo(() => {
-    if (dehydratedState) {
-      hydrate(queryClient, dehydratedState);
-    }
-  }, [dehydratedState, queryClient]);
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      <NotesInner />
-    </QueryClientProvider>
-  );
-}
-
-function NotesInner() {
+export default function NotesClient() {
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -60,6 +35,7 @@ function NotesInner() {
     queryKey: ["notes", currentPage, debouncedSearch],
     queryFn: () => fetchNotes(currentPage, perPage, debouncedSearch),
     staleTime: 60_000,
+
     placeholderData: (previousData) => previousData,
   });
 
@@ -84,8 +60,9 @@ function NotesInner() {
         </button>
       </header>
 
-      {isLoading && <p>Loading...</p>}
-      {isFetching && <p>Loading page...</p>}
+      {isLoading && !data && <p>Loading...</p>}
+      {isFetching && <p className={css.fetchingLabel}>Updating...</p>}
+
       {notes.length > 0 && <NoteList notes={notes} />}
 
       {isModalOpen && (

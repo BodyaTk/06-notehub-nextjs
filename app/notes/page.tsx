@@ -1,4 +1,8 @@
-import { QueryClient, dehydrate } from "@tanstack/react-query";
+import {
+  QueryClient,
+  dehydrate,
+  HydrationBoundary,
+} from "@tanstack/react-query"; // 1. Додали HydrationBoundary
 import NotesClient from "./Notes.client";
 import { fetchNotes } from "../../lib/api";
 
@@ -19,7 +23,10 @@ export default async function NotesPage() {
   return (
     <div>
       <h1>Notes Page</h1>
-      <NotesClient dehydratedState={dehydratedState} />
+      {/* 2. Огортаємо клієнтський компонент і передаємо стан сюди */}
+      <HydrationBoundary state={dehydratedState}>
+        <NotesClient />
+      </HydrationBoundary>
     </div>
   );
 }
